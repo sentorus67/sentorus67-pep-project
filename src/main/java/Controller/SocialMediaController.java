@@ -1,7 +1,16 @@
 package Controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import Model.Account;
+import Service.AccountService;
+
+
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import java.util.List;
+
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller. The endpoints you will need can be
@@ -9,18 +18,27 @@ import io.javalin.http.Context;
  * refer to prior mini-project labs and lecture materials for guidance on how a controller may be built.
  */
 public class SocialMediaController {
+     AccountService accountService;
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
      * suite must receive a Javalin object from this method.
      * @return a Javalin app object which defines the behavior of the Javalin controller.
      */
+
+    public void controlCenter(){
+        this.accountService = new AccountService();
+        accountService.serviceTest();
+    }
+
     public Javalin startAPI() {
         Javalin app = Javalin.create();
         app.get("example-endpoint", this::exampleHandler);
+        app.post("/register", this::postAccountHandler);
+
 
         return app;
     }
-
+  
     /**
      * This is an example handler for an example endpoint.
      * @param context The Javalin Context object manages information about both the HTTP request and response.
@@ -29,5 +47,23 @@ public class SocialMediaController {
         context.json("sample text");
     }
 
+    public void postAccountHandler(Context ctx) throws JsonProcessingException{
+        this.accountService = new AccountService();
+            ObjectMapper mapper = new ObjectMapper();
+            Account newAccount = mapper.readValue(ctx.body(), Account.class);
+            Account addedAccount= accountService.addAccount(newAccount);
+            //accountService.addAccount(newAccount);
+          //  accountService.serviceTest();
+        if(newAccount != null && newAccount.username.length() != 0 && newAccount.password.length()>=4){
+            //Lastly check if author already exist
+            newAccount.setAccount_id(addedAccount.getAccount_id());
+            ctx.json(mapper.writeValueAsString(newAccount));
+    
+        }
+        else{
+            ctx.status(400);
+        }
+            
+        }
 
 }
