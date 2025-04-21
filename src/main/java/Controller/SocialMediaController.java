@@ -25,15 +25,11 @@ public class SocialMediaController {
      * @return a Javalin app object which defines the behavior of the Javalin controller.
      */
 
-    public void controlCenter(){
-        this.accountService = new AccountService();
-        accountService.serviceTest();
-    }
-
     public Javalin startAPI() {
         Javalin app = Javalin.create();
         app.get("example-endpoint", this::exampleHandler);
         app.post("/register", this::postAccountHandler);
+        app.post("/login", this::getAccountHandler);
 
 
         return app;
@@ -51,14 +47,16 @@ public class SocialMediaController {
         this.accountService = new AccountService();
             ObjectMapper mapper = new ObjectMapper();
             Account newAccount = mapper.readValue(ctx.body(), Account.class);
+
+        if( newAccount.username.length() != 0 && newAccount.password.length()>=4){
             Account addedAccount= accountService.addAccount(newAccount);
-            //accountService.addAccount(newAccount);
-          //  accountService.serviceTest();
-        if(newAccount != null && newAccount.username.length() != 0 && newAccount.password.length()>=4){
-            //Lastly check if author already exist
+            try {
             newAccount.setAccount_id(addedAccount.getAccount_id());
             ctx.json(mapper.writeValueAsString(newAccount));
-    
+                
+            } catch (Exception e) {
+                ctx.status(400);
+            }
         }
         else{
             ctx.status(400);
@@ -66,4 +64,32 @@ public class SocialMediaController {
             
         }
 
+    public void getAccountHandler(Context ctx) throws JsonProcessingException{
+      
+        this.accountService = new AccountService();
+        ObjectMapper mapper = new ObjectMapper();
+        Account Account = mapper.readValue(ctx.body(), Account.class);
+        List<Account> prexistingAccounts= accountService.getAllAccounts();
+        boolean realAccount=false;
+        for (Account account2 : prexistingAccounts) {
+  
+
+            if((account2.getUsername().equals(Account.getUsername())) && (account2.getPassword().equals(Account.getPassword()))){
+
+                realAccount=true;
+                continue;
+            }
+        }
+
+        if(realAccount){
+
+            Account returnedAccount = accountService.getAccount(Account.getUsername(), Account.getPassword());
+           Account.setAccount_id(returnedAccount.getAccount_id());
+            ctx.json(mapper.writeValueAsString(Account));
+        }
+        else{
+            ctx.status(401);
+           
+        }
+    }
 }

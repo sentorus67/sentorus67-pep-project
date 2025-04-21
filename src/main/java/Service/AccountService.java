@@ -21,8 +21,9 @@ public class AccountService{
       // return null;
     }
 
-    public void serviceTest(){
-       
-        System.out.println("the service is being read");
+    public Account getAccount(String username,String password){
+        return accountDAO.getAccount(username, password);
     }
+
+
 }
