@@ -24,6 +24,8 @@ public class AccountService{
     public Account getAccount(String username,String password){
         return accountDAO.getAccount(username, password);
     }
-
+     public Account getAccount(int accound_id){
+        return null;
+     }
 
 }

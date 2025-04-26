@@ -52,6 +52,24 @@ public class AccountDAO {
      
     }
 
+    public Account getAccount(int account_id){
+        Connection connection = ConnectionUtil.getConnection();
+        try {
+            String sqlString=" SELECT * FROM Account WHERE account_id = ?";
+            PreparedStatement pStatement= connection.prepareStatement(sqlString);
+            pStatement.setInt(1, account_id);
+            ResultSet rSet=pStatement.executeQuery();
+            if(rSet.next()){
+                return new Account(rSet.getInt("account_id"),rSet.getString("username"),rSet.getString("password"));
+            }
+        } catch (Exception e) {
+            
+            System.out.println(e.getMessage());
+            return null;
+        }
+        return null;
+    }
+
     public Account insertAccount(Account account){
         Connection connection = ConnectionUtil.getConnection();
         try {
@@ -63,6 +81,7 @@ public class AccountDAO {
 
              pStatement.executeUpdate();
              ResultSet pkeyResultSet = pStatement.getGeneratedKeys();
+             System.out.println(pkeyResultSet);
              if(pkeyResultSet.next()){
                 int generated_account_id = (int) pkeyResultSet.getLong(1);
                 return new Account(generated_account_id, account.getUsername(),account.getPassword());

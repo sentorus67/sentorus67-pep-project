@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import Model.Account;
 import Service.AccountService;
 
+import Model.Message;
+import Service.MessageService;
+
 
 import io.javalin.Javalin;
 import io.javalin.http.Context;
@@ -19,6 +22,7 @@ import java.util.List;
  */
 public class SocialMediaController {
      AccountService accountService;
+     MessageService messageService;
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
      * suite must receive a Javalin object from this method.
@@ -30,6 +34,10 @@ public class SocialMediaController {
         app.get("example-endpoint", this::exampleHandler);
         app.post("/register", this::postAccountHandler);
         app.post("/login", this::getAccountHandler);
+        app.post("/messages",this::postMessageHandler);
+       app.get("/messages", this::getMessagesHandler);
+       app.get("/messages/{message_id}", this::getMessageByIdHandler);
+       app.get("/accounts/{account_id}/messages", this::getMessagesByAccountHandler);
 
 
         return app;
@@ -91,5 +99,53 @@ public class SocialMediaController {
             ctx.status(401);
            
         }
+    }
+
+    public void postMessageHandler(Context ctx) throws JsonProcessingException{
+        this.messageService = new MessageService();
+        this.accountService= new AccountService();
+        ObjectMapper mapper = new ObjectMapper();
+        Message newMessage = mapper.readValue( ctx.body(), Message.class);
+        if(newMessage.getMessage_text().length()>0 && newMessage.getMessage_text().length() < 255 ){
+            Message addedMessage = messageService.addMessage(newMessage);
+            try {
+                newMessage.setMessage_id(addedMessage.getMessage_id());
+                ctx.json(mapper.writeValueAsString(newMessage));
+                    
+                } catch (Exception e) {
+                    ctx.status(400);
+                }
+        }
+        else{
+            ctx.status(400);
+        }
+    }
+
+    public void getMessagesHandler (Context ctx) throws JsonProcessingException{
+        this.messageService = new MessageService();
+        this.accountService= new AccountService();
+        List<Message> prexistingMessages= messageService.getAllMessages();
+       ctx.json(prexistingMessages);
+    }
+
+    public void getMessageByIdHandler (Context ctx) throws JsonProcessingException{
+        int mID= Integer.parseInt(ctx.pathParam("message_id"));
+        this.messageService = new MessageService();
+        Message foundMessage =messageService.getMessage(mID);
+        if(foundMessage ==null){
+            ctx.json("");
+        }
+        else{
+            ctx.json(foundMessage);
+        }
+     
+
+    }
+
+    public void getMessagesByAccountHandler(Context ctx) throws JsonProcessingException{
+        int accountID= Integer.parseInt(ctx.pathParam("account_id"));
+        this.messageService = new MessageService();
+        List<Message> foundMessages = messageService.getAllMessages(accountID);
+        ctx.json(foundMessages);
     }
 }
