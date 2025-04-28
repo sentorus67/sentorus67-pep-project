@@ -38,6 +38,8 @@ public class SocialMediaController {
        app.get("/messages", this::getMessagesHandler);
        app.get("/messages/{message_id}", this::getMessageByIdHandler);
        app.get("/accounts/{account_id}/messages", this::getMessagesByAccountHandler);
+       app.patch("/messages/{message_id}", this::updateMessageHandler);
+       app.delete("/messages/{message_id}", this::deleteMessageHandler);
 
 
         return app;
@@ -147,5 +149,39 @@ public class SocialMediaController {
         this.messageService = new MessageService();
         List<Message> foundMessages = messageService.getAllMessages(accountID);
         ctx.json(foundMessages);
+    }
+
+    public void updateMessageHandler(Context ctx) throws JsonProcessingException{
+        int messageID= Integer.parseInt(ctx.pathParam("message_id"));
+       this.messageService =new MessageService();
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        Message newMessage = mapper.readValue( ctx.body(), Message.class);
+        if(newMessage.getMessage_text().length()>0 && newMessage.getMessage_text().length()<255 ){
+            Message updatedMessage= messageService.updateMessage( messageID , newMessage.getMessage_text());
+            ctx.json(updatedMessage);
+        }
+        else{
+            ctx.status(400);
+        }
+     
+      } catch (Exception e) {
+        // TODO: handle exception
+        ctx.status(400);
+      } 
+    }
+
+    public void deleteMessageHandler(Context ctx) throws JsonProcessingException{
+        int messageID= Integer.parseInt(ctx.pathParam("message_id"));
+        this.messageService =new MessageService();
+        Message existingMessage =messageService.getMessage(messageID);
+        if( existingMessage == null){
+            ctx.status(200);
+        }
+        else{
+            Message deletedMessage= messageService.deleteMessage(messageID);
+            ctx.json(deletedMessage);
+        }
+ 
     }
 }

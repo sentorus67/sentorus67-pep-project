@@ -102,4 +102,45 @@ public class MessageDAO {
             return null;
         }
     }
+
+    public Message updateMessage(int message_id , String updateMessageText){
+        Connection connection= ConnectionUtil.getConnection();
+        try {
+          
+            String sql= "UPDATE Message SET message_text = ? WHERE message_id = ?";
+            PreparedStatement pStatement =connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+            pStatement.setString(1, updateMessageText);
+            pStatement.setInt(2, message_id);
+          pStatement.executeUpdate();
+           
+          // ResultSet rSet=pStatement.getGeneratedKeys();
+         
+           Message updatedMessage = getMessage(message_id);
+           if(updatedMessage.getMessage_text().equals(updateMessageText)){
+            return updatedMessage;
+           }
+           else return null;
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+
+        }
+    }
+
+    public Message deleteMessage(int message_id){
+        Connection connection= ConnectionUtil.getConnection();
+        Message removedMessage= getMessage(message_id);
+        try {
+            String sql = "DELETE FROM Message WHERE message_id = ?";
+            PreparedStatement pStatement = connection.prepareStatement(sql);
+            pStatement.setInt(1, message_id);
+            pStatement.executeUpdate();
+            return removedMessage;
+        } catch (SQLException e) {
+            // TODO: handle exception
+            System.out.println(e.getMessage());
+            return null;
+        }
+       
+    }
 }
