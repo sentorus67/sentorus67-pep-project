@@ -1,7 +1,7 @@
 package DAO;
 
 import Model.Message;
-import DAO.AccountDAO;
+//import DAO.AccountDAO;
 import Util.ConnectionUtil;
 
 import java.sql.*;
@@ -16,7 +16,7 @@ public class MessageDAO {
         this.accountDAO= new AccountDAO();
         try {
             String sqlString = "INSERT INTO Message (posted_by, message_text, time_posted_epoch) VALUES (?,?,?) ";
-            if((accountDAO.getAccount(message.getPosted_by()) != null) && message.getMessage_text().length()>0 && message.getMessage_text().length()<255 ){
+            if((accountDAO.getAccount(message.getPosted_by()) != null)){
                 PreparedStatement pStatement= connection.prepareStatement(sqlString,Statement.RETURN_GENERATED_KEYS);
                 pStatement.setInt(1, message.getPosted_by());
                 pStatement.setString(2, message.getMessage_text());

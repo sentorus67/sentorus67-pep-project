@@ -12,19 +12,24 @@ public class AccountService{
         this.accountDAO = new AccountDAO();
     }
 
-    public List<Account> getAllAccounts(){
-        return accountDAO.getAllAccounts();
-    }
 
     public Account addAccount(Account account){
-        return accountDAO.insertAccount(account);
-      // return null;
+        if (account.username.length() !=0 && account.password.length()>=4){
+        
+            return accountDAO.insertAccount(account);
+
+        }
+        else{
+            return null;
+        }
+        
     }
 
     public Account getAccount(String username,String password){
         return accountDAO.getAccount(username, password);
     }
-     public Account getAccount(int accound_id){
+
+    public Account getAccount(int accound_id){
         return null;
      }
 

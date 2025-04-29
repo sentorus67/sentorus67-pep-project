@@ -9,23 +9,23 @@ import java.util.List;
 
 public class AccountDAO {
 
-    public List<Account> getAllAccounts(){
-        Connection connection = ConnectionUtil.getConnection();
-        List<Account> accountList= new ArrayList<>();
-        try {
-            String sqlSelect ="SELECT * FROM Account";
-            PreparedStatement pStatement= connection.prepareStatement(sqlSelect);
-            ResultSet rSet= pStatement.executeQuery();
-            while(rSet.next()){
-                Account account = new Account(rSet.getInt("account_id"),rSet.getString("username"),rSet.getString("password"));
-                accountList.add(account);
-            }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+    // public List<Account> getAllAccounts(){
+    //     Connection connection = ConnectionUtil.getConnection();
+    //     List<Account> accountList= new ArrayList<>();
+    //     try {
+    //         String sqlSelect ="SELECT * FROM Account";
+    //         PreparedStatement pStatement= connection.prepareStatement(sqlSelect);
+    //         ResultSet rSet= pStatement.executeQuery();
+    //         while(rSet.next()){
+    //             Account account = new Account(rSet.getInt("account_id"),rSet.getString("username"),rSet.getString("password"));
+    //             accountList.add(account);
+    //         }
+    //     } catch (SQLException e) {
+    //         System.out.println(e.getMessage());
 
-        }
-         return accountList;
-    }
+    //     }
+    //      return accountList;
+    // }
 
     public Account getAccount(String username,String password){
         Connection connection = ConnectionUtil.getConnection();
@@ -35,14 +35,20 @@ public class AccountDAO {
             pStatement.setString(1,username);
             pStatement.setString(2,password);
             ResultSet rSet= pStatement.executeQuery();
-           int accountId=0;
             while (rSet.next()) {
-                 accountId=rSet.getInt("account_id");
+                int accountId=rSet.getInt(1);
+
+                if (accountId != 0) {
+                    return new Account(accountId,rSet.getString(2),rSet.getString(3));
+
+                } else {
+                    return null;
+                    
+                }
                
             }
-    
             
-           return new Account(accountId,username,password);
+           return null;
 
 
         } catch (SQLException e) {
@@ -73,7 +79,7 @@ public class AccountDAO {
     public Account insertAccount(Account account){
         Connection connection = ConnectionUtil.getConnection();
         try {
-            if(account.username.length() != 0 && account.password.length()>=4){
+            
             String sqlSelect ="INSERT INTO Account (username, password) VALUES (?,?)";
             PreparedStatement pStatement= connection.prepareStatement(sqlSelect,Statement.RETURN_GENERATED_KEYS);
             pStatement.setString(1, account.getUsername());
@@ -81,19 +87,15 @@ public class AccountDAO {
 
              pStatement.executeUpdate();
              ResultSet pkeyResultSet = pStatement.getGeneratedKeys();
-             System.out.println(pkeyResultSet);
              if(pkeyResultSet.next()){
                 int generated_account_id = (int) pkeyResultSet.getLong(1);
                 return new Account(generated_account_id, account.getUsername(),account.getPassword());
             }
-        }
-        else{
-            System.out.println("missing value to add to table");
-            return null;
-        }
+
             
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+            return null;
         }
         return null;
     }

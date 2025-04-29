@@ -57,20 +57,13 @@ public class SocialMediaController {
         this.accountService = new AccountService();
             ObjectMapper mapper = new ObjectMapper();
             Account newAccount = mapper.readValue(ctx.body(), Account.class);
-
-        if( newAccount.username.length() != 0 && newAccount.password.length()>=4){
-            Account addedAccount= accountService.addAccount(newAccount);
-            try {
-            newAccount.setAccount_id(addedAccount.getAccount_id());
-            ctx.json(mapper.writeValueAsString(newAccount));
-                
-            } catch (Exception e) {
-                ctx.status(400);
+            Account addedAccount =accountService.addAccount(newAccount);
+            if(addedAccount != null){
+                ctx.json(mapper.writeValueAsString(addedAccount));
             }
-        }
-        else{
+             else {
             ctx.status(400);
-        }
+            }
             
         }
 
@@ -79,23 +72,10 @@ public class SocialMediaController {
         this.accountService = new AccountService();
         ObjectMapper mapper = new ObjectMapper();
         Account Account = mapper.readValue(ctx.body(), Account.class);
-        List<Account> prexistingAccounts= accountService.getAllAccounts();
-        boolean realAccount=false;
-        for (Account account2 : prexistingAccounts) {
-  
+        Account returnedAccount = accountService.getAccount(Account.getUsername(), Account.getPassword());
 
-            if((account2.getUsername().equals(Account.getUsername())) && (account2.getPassword().equals(Account.getPassword()))){
-
-                realAccount=true;
-                continue;
-            }
-        }
-
-        if(realAccount){
-
-            Account returnedAccount = accountService.getAccount(Account.getUsername(), Account.getPassword());
-           Account.setAccount_id(returnedAccount.getAccount_id());
-            ctx.json(mapper.writeValueAsString(Account));
+        if(returnedAccount != null){
+            ctx.json(mapper.writeValueAsString(returnedAccount));
         }
         else{
             ctx.status(401);
@@ -105,15 +85,12 @@ public class SocialMediaController {
 
     public void postMessageHandler(Context ctx) throws JsonProcessingException{
         this.messageService = new MessageService();
-        this.accountService= new AccountService();
         ObjectMapper mapper = new ObjectMapper();
         Message newMessage = mapper.readValue( ctx.body(), Message.class);
-        if(newMessage.getMessage_text().length()>0 && newMessage.getMessage_text().length() < 255 ){
-            Message addedMessage = messageService.addMessage(newMessage);
+        Message addedMessage = messageService.addMessage(newMessage);
+        if(addedMessage != null ){
             try {
-                newMessage.setMessage_id(addedMessage.getMessage_id());
-                ctx.json(mapper.writeValueAsString(newMessage));
-                    
+                ctx.json(mapper.writeValueAsString(addedMessage));   
                 } catch (Exception e) {
                     ctx.status(400);
                 }
@@ -125,7 +102,6 @@ public class SocialMediaController {
 
     public void getMessagesHandler (Context ctx) throws JsonProcessingException{
         this.messageService = new MessageService();
-        this.accountService= new AccountService();
         List<Message> prexistingMessages= messageService.getAllMessages();
        ctx.json(prexistingMessages);
     }
@@ -157,16 +133,14 @@ public class SocialMediaController {
       try {
         ObjectMapper mapper = new ObjectMapper();
         Message newMessage = mapper.readValue( ctx.body(), Message.class);
-        if(newMessage.getMessage_text().length()>0 && newMessage.getMessage_text().length()<255 ){
-            Message updatedMessage= messageService.updateMessage( messageID , newMessage.getMessage_text());
+        Message updatedMessage= messageService.updateMessage( messageID , newMessage.getMessage_text());
+        if(updatedMessage != null ){
             ctx.json(updatedMessage);
         }
         else{
             ctx.status(400);
         }
-     
       } catch (Exception e) {
-        // TODO: handle exception
         ctx.status(400);
       } 
     }
@@ -174,12 +148,11 @@ public class SocialMediaController {
     public void deleteMessageHandler(Context ctx) throws JsonProcessingException{
         int messageID= Integer.parseInt(ctx.pathParam("message_id"));
         this.messageService =new MessageService();
-        Message existingMessage =messageService.getMessage(messageID);
-        if( existingMessage == null){
+        Message deletedMessage= messageService.deleteMessage(messageID);
+        if( deletedMessage == null){
             ctx.status(200);
         }
         else{
-            Message deletedMessage= messageService.deleteMessage(messageID);
             ctx.json(deletedMessage);
         }
  

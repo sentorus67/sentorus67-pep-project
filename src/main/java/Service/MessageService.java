@@ -13,7 +13,15 @@ public class MessageService {
     }
 
     public Message addMessage(Message message){
-        return messageDAO.insertMessage(message);
+        if(message.getMessage_text().length()>0 && message.getMessage_text().length() < 255 ){
+            return messageDAO.insertMessage(message);
+        }
+        else{
+            return null;
+
+        }
+       
+        
     }
 
     public List<Message> getAllMessages(){
@@ -29,7 +37,12 @@ public class MessageService {
     }
 
     public Message updateMessage(int message_id ,String nMessageText){
-        return messageDAO.updateMessage(message_id, nMessageText);
+        if(nMessageText.length()>0 && nMessageText.length()<255 ){
+            return messageDAO.updateMessage(message_id, nMessageText);
+        }
+       else{
+        return null;
+       }
     }
 
     public Message deleteMessage(int message_id){
